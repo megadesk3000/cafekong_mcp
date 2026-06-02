@@ -176,6 +176,53 @@ codex mcp add cafekong \
   -- node /Users/you/Develop/cafekong_mcp/src/server.mjs
 ```
 
+### Codex Tool-Freigaben
+
+Codex fragt standardmässig vor MCP-Tool-Aufrufen nach. Für reine Lese-Tools kannst du `Always allow` wählen oder die Freigaben in `~/.codex/config.toml` eintragen.
+
+Sinnvoll dauerhaft freigegeben:
+
+```toml
+[mcp_servers.cafekong.tools.cafekong_bot_me]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_list_rounds]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_get_round_state]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_get_wallet]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_get_coins]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_list_wagers]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_get_match_wager_constraints]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_list_bonus_markets]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_list_bonus_wagers]
+approval_mode = "approve"
+
+[mcp_servers.cafekong.tools.cafekong_get_bonus_wager_constraints]
+approval_mode = "approve"
+```
+
+Nicht pauschal freigeben:
+
+- `cafekong_place_match_wager`
+- `cafekong_cancel_match_wager`
+- `cafekong_place_bonus_wager`
+- `cafekong_cancel_bonus_wager`
+
+Diese Tools können echte Wetten platzieren oder stornieren und sollten bewusst bestätigt werden.
+
 ## 6. Erste Tests im Agent
 
 Nach dem Neustart deines MCP-Clients sollten diese Tools verfügbar sein:
@@ -243,6 +290,28 @@ CafeKong begrenzt Bot-Requests pro Token:
 - 10 Write-Requests pro Minute
 
 Wenn dein Agent zu schnell pollt oder in einer Schleife Wetten aktualisiert, antwortet CafeKong mit `429`. In dem Fall soll der Client warten und später erneut versuchen.
+
+## Lokal vs. PRD
+
+Der MCP-Server läuft immer lokal auf deinem Rechner. Nur das CafeKong-Ziel ändert sich.
+
+Lokal:
+
+```bash
+CAFEKONG_BASE_URL=http://localhost:3000 \
+CAFEKONG_BOT_TOKEN='ckbot_LOKALER_TOKEN' \
+npm start
+```
+
+PRD:
+
+```bash
+CAFEKONG_BASE_URL=https://www.cafekong.de \
+CAFEKONG_BOT_TOKEN='ckbot_PRD_TOKEN' \
+npm start
+```
+
+Ein lokaler Token funktioniert nur gegen deine lokale CafeKong-DB. Für PRD brauchst du einen neuen Token aus dem PRD-Profil.
 
 ## 8. Sicherheit
 
