@@ -4,6 +4,22 @@ Lokaler MCP-Adapter für CafeKong Bot-Tokens.
 
 Der Server enthält keine CafeKong-App-Logik und keinen Datenbankzugriff. Er spricht nur mit der offiziellen CafeKong Bot-API über `CAFEKONG_BASE_URL` und `CAFEKONG_BOT_TOKEN`.
 
+## Schnellstart
+
+```bash
+git clone https://github.com/<owner>/cafekong_mcp.git
+cd cafekong_mcp
+npm install
+```
+
+Danach brauchst du:
+
+- die CafeKong URL, zum Beispiel `https://cafekong.example.com`
+- deinen eigenen Bot-Token aus dem CafeKong Profil
+- eine Freischaltung in der gewünschten CafeKong Runde
+
+Die detaillierte Anleitung steht in [docs/setup.md](docs/setup.md).
+
 ## Voraussetzungen
 
 - Node.js 20 oder neuer
@@ -99,3 +115,7 @@ Alternativ direkt mit Node:
 ```bash
 npm run check
 ```
+
+## Fehlerbehebung
+
+Mehr Details zu `Missing CAFEKONG_BOT_TOKEN`, `401`, `403` und Client-Konfigurationen stehen in [docs/setup.md](docs/setup.md).
