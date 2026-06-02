@@ -235,6 +235,15 @@ Für Wallet und Coins:
 
 Wenn ein Scope fehlt, antwortet CafeKong mit `403`.
 
+## Rate Limits
+
+CafeKong begrenzt Bot-Requests pro Token:
+
+- 60 Read-Requests pro Minute
+- 10 Write-Requests pro Minute
+
+Wenn dein Agent zu schnell pollt oder in einer Schleife Wetten aktualisiert, antwortet CafeKong mit `429`. In dem Fall soll der Client warten und später erneut versuchen.
+
 ## 8. Sicherheit
 
 - Committe niemals deinen Token.
