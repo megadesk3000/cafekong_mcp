@@ -105,8 +105,9 @@ Remote und lokal können als getrennte MCP-Einträge konfiguriert werden. Damit 
 
 ## CafeKong- und Supabase-Konfiguration
 
-- In Supabase unter `Authentication > OAuth Server` OAuth und Dynamic Client Registration aktivieren.
-- Authorization Path auf `https://www.cafekong.de/oauth/consent` setzen.
+- In Supabase unter `Authentication > URL Configuration` die Site URL `https://www.cafekong.de` prüfen.
+- Unter `Authentication > OAuth Server` OAuth und Dynamic Client Registration aktivieren.
+- Authorization Path auf `/oauth/consent` setzen.
 - Die Migration `202609041200_mcp_oauth.sql` anwenden und den darin angelegten Custom Access Token Hook im Supabase-Dashboard aktivieren.
 - In der CafeKong-Vercel-App `CAFEKONG_MCP_SERVICE_SECRET`, `MCP_DELEGATION_SIGNING_SECRET` und `MCP_OAUTH_AUDIENCE=https://mcp.cafekong.de/api/mcp` setzen.
 - Für beide Secrets unterschiedliche, zufällige Werte mit mindestens 32 Zeichen verwenden. Nur der Service-Secret wird mit dem MCP-Projekt geteilt.
