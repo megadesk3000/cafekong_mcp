@@ -3,7 +3,7 @@
 Der öffentlich dokumentierte Standard-Endpunkt ist:
 
 ```text
-https://cafekong-mcp.vercel.app/api/mcp
+https://mcp.cafekong.de/api/mcp
 ```
 
 Er verwendet Streamable HTTP. Der lokale stdio-Server bleibt unabhängig davon als Entwicklungs- und Ausweichoption verfügbar.
@@ -12,12 +12,13 @@ Er verwendet Streamable HTTP. Der lokale stdio-Server bleibt unabhängig davon a
 
 ```text
 MCP-Client
-  -> HTTPS mit persönlichem CafeKong Bot-Token
+  -> HTTPS mit Supabase OAuth-Token
   -> Vercel /api/mcp
+  -> kurzlebiger CafeKong-Token-Exchange
   -> CafeKong Bot-API
 ```
 
-Der persönliche Bot-Token wird nicht als gemeinsames Vercel-Secret gespeichert. Der MCP-Client sendet ihn als Bearer-Token. Der Remote-Handler validiert ihn über `GET /api/bot/me` und verwendet ihn anschliessend für den jeweiligen Tool-Aufruf.
+Der OAuth-Token wird geprüft und serverseitig gegen ein fünf Minuten gültiges Delegationstoken getauscht. Nur dieses Delegationstoken erreicht die CafeKong Bot-API. Persönliche `ckbot_`-Tokens funktionieren aus Kompatibilitätsgründen weiterhin, werden aber nie als gemeinsames Vercel-Secret gespeichert.
 
 ## 1. Repository importieren
 
@@ -39,16 +40,31 @@ Als Environment Variable für Production und Preview setzen:
 
 ```text
 CAFEKONG_BASE_URL=https://www.cafekong.de
+CAFEKONG_OAUTH_ISSUER=https://PROJECT_REF.supabase.co/auth/v1
+CAFEKONG_MCP_SERVICE_SECRET=<langer-zufälliger-wert>
+MCP_RESOURCE_URL=https://mcp.cafekong.de/api/mcp
 ```
 
-`CAFEKONG_BOT_TOKEN` nicht in Vercel hinterlegen. Ein gemeinsamer Token würde alle Nutzer unter derselben CafeKong-Identität ausführen.
+`CAFEKONG_MCP_SERVICE_SECRET` muss exakt denselben Wert wie in der CafeKong-App haben. `CAFEKONG_BOT_TOKEN` nicht in Vercel hinterlegen.
 
-## 3. Deployment prüfen
+## 3. Eigene Domain verbinden
+
+1. Im Vercel-Projekt unter `Settings > Domains` die Domain
+   `mcp.cafekong.de` hinzufügen.
+2. Beim DNS-Anbieter den von Vercel angezeigten CNAME für den Host `mcp`
+   setzen.
+3. Warten, bis Vercel Domain und TLS-Zertifikat als gültig anzeigt.
+
+`https://mcp.cafekong.de/api/mcp` ist die kanonische OAuth-Resource. Die
+automatisch vergebene `*.vercel.app`-Adresse nicht in MCP-Clients oder als
+OAuth-Audience verwenden.
+
+## 4. Deployment prüfen
 
 Für das Standard-Deployment lautet der MCP-Endpunkt:
 
 ```text
-https://cafekong-mcp.vercel.app/api/mcp
+https://mcp.cafekong.de/api/mcp
 ```
 
 Der Endpunkt muss Requests ohne Bearer-Token mit `401 Unauthorized` ablehnen.
@@ -59,30 +75,21 @@ Mit dem MCP Inspector kann der vollständige Transport geprüft werden:
 npx @modelcontextprotocol/inspector@latest
 ```
 
-Im Inspector `Streamable HTTP` auswählen, die vollständige `/api/mcp`-URL eintragen und den persönlichen CafeKong Bot-Token als Bearer-Token verwenden.
+Im Inspector `Streamable HTTP` auswählen und die vollständige `/api/mcp`-URL eintragen. Für den OAuth-Test die angebotene Anmeldung verwenden; alternativ kann weiterhin ein persönlicher CafeKong Bot-Token als Bearer-Token gesetzt werden.
 
-## 4. Codex oder Claude Code mit dem Remote-Server verbinden
+## 5. Codex oder Claude Code mit dem Remote-Server verbinden
 
-Den persönlichen Token lokal in der Umgebung setzen:
-
-```bash
-export CAFEKONG_BOT_TOKEN='ckbot_...'
-```
-
-Danach in `~/.codex/config.toml`:
+In `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.cafekong]
-url = "https://cafekong-mcp.vercel.app/api/mcp"
-bearer_token_env_var = "CAFEKONG_BOT_TOKEN"
+url = "https://mcp.cafekong.de/api/mcp"
 default_tools_approval_mode = "writes"
 ```
 
-Codex anschliessend neu starten.
+Danach `codex mcp login cafekong` ausführen. Claude verwendet dieselbe URL und startet seinen OAuth-Flow über die Oberfläche.
 
-Claude Code verwendet denselben Endpunkt und Bearer-Token. Die vollständige Konfiguration steht in [setup.md](setup.md). Für Claude.ai und Claude Desktop wäre zusätzlich OAuth nötig; der aktuelle manuelle Bearer-Token ist dort nicht direkt über die Connector-Oberfläche konfigurierbar.
-
-Dabei läuft kein lokaler MCP-Prozess. Nur der persönliche Token kommt weiterhin aus der lokalen Umgebung und wird über HTTPS an den Remote-Endpunkt gesendet.
+Dabei läuft kein lokaler MCP-Prozess und es muss kein CafeKong-Token von Hand gespeichert werden. Die vollständige Konfiguration und die persönliche Token-Alternative stehen in [setup.md](setup.md).
 
 ## Lokale Variante weiterhin verwenden
 
@@ -96,8 +103,10 @@ npm start
 
 Remote und lokal können als getrennte MCP-Einträge konfiguriert werden. Damit Tools nicht doppelt erscheinen, sollte normalerweise nur einer der beiden Einträge aktiviert sein.
 
-## Einschränkungen
+## CafeKong- und Supabase-Konfiguration
 
-- Der Remote-Endpunkt unterstützt derzeit vorkonfigurierte Bearer-Tokens für Codex und Claude Code, aber keinen interaktiven OAuth-Login für Claude.ai oder Claude Desktop.
-- Jeder MCP-Request validiert den Token gegen CafeKong. Diese Prüfung zählt als Bot-API-Read.
-- Die normalen CafeKong Scopes, Rundenfreigaben und Rate Limits bleiben unverändert aktiv.
+- In Supabase unter `Authentication > OAuth Server` OAuth und Dynamic Client Registration aktivieren.
+- Authorization Path auf `https://www.cafekong.de/oauth/consent` setzen.
+- Die Migration `202609041200_mcp_oauth.sql` anwenden und den darin angelegten Custom Access Token Hook im Supabase-Dashboard aktivieren.
+- In der CafeKong-Vercel-App `CAFEKONG_MCP_SERVICE_SECRET`, `MCP_DELEGATION_SIGNING_SECRET` und `MCP_OAUTH_AUDIENCE=https://mcp.cafekong.de/api/mcp` setzen.
+- Für beide Secrets unterschiedliche, zufällige Werte mit mindestens 32 Zeichen verwenden. Nur der Service-Secret wird mit dem MCP-Projekt geteilt.

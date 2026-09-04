@@ -7,7 +7,7 @@ Diese Anleitung ist für Spieler gedacht, die CafeKong mit Codex oder Claude Cod
 Der empfohlene CafeKong MCP-Endpunkt ist:
 
 ```text
-https://cafekong-mcp.vercel.app/api/mcp
+https://mcp.cafekong.de/api/mcp
 ```
 
 Du musst dafür weder dieses Repository klonen noch Node.js oder einen lokalen Server installieren.
@@ -26,15 +26,30 @@ Die lokale stdio-Variante bleibt als Alternative für Entwicklung und eigene Ins
 1. Erstelle oder nutze deinen normalen CafeKong Account.
 2. Bitte den Rundenadmin, MCP für die Runde zu aktivieren.
 3. Bitte den Rundenadmin, deinen User im MCP-Tab der Runde freizuschalten.
-4. Öffne dein CafeKong Profil.
-5. Erstelle unter `MCP Bot-Zugriff` einen Bot-Token mit den benötigten Scopes.
-6. Kopiere den Token sofort. Er wird nur einmal angezeigt.
+4. Verbinde in deinem MCP-Client den gehosteten CafeKong-Endpunkt.
+5. Melde dich im geöffneten Browser bei CafeKong an und erlaube den Zugriff.
 
 Wenn du im Profil keinen MCP-Bereich siehst, bist du noch in keiner Runde für MCP freigeschaltet.
 
 ## 2. Codex konfigurieren
 
-Codex unterstützt Remote-MCP-Server per Streamable HTTP und Bearer-Token.
+Codex unterstützt Remote-MCP-Server per Streamable HTTP und OAuth.
+
+```toml
+[mcp_servers.cafekong]
+url = "https://mcp.cafekong.de/api/mcp"
+default_tools_approval_mode = "writes"
+```
+
+Danach den Browser-Login starten:
+
+```bash
+codex mcp login cafekong
+```
+
+Nach Zustimmung speichert Codex seine OAuth-Zugangsdaten. Ein CafeKong Bot-Token muss dafür nicht mehr lokal hinterlegt werden.
+
+### Alternative: persönlicher Token
 
 ### Token aus einer Umgebungsvariable
 
@@ -48,7 +63,7 @@ Trage danach in `~/.codex/config.toml` ein:
 
 ```toml
 [mcp_servers.cafekong]
-url = "https://cafekong-mcp.vercel.app/api/mcp"
+url = "https://mcp.cafekong.de/api/mcp"
 bearer_token_env_var = "CAFEKONG_BOT_TOKEN"
 default_tools_approval_mode = "writes"
 ```
@@ -61,7 +76,7 @@ Wenn die Codex Desktop-App deine Shell-Umgebung nicht übernimmt, kannst du den 
 
 ```toml
 [mcp_servers.cafekong]
-url = "https://cafekong-mcp.vercel.app/api/mcp"
+url = "https://mcp.cafekong.de/api/mcp"
 http_headers = { Authorization = "Bearer ckbot_DEIN_TOKEN" }
 default_tools_approval_mode = "writes"
 ```
@@ -74,7 +89,11 @@ chmod 600 ~/.codex/config.toml
 
 Starte Codex nach der Änderung vollständig neu.
 
-## 3. Claude Code konfigurieren
+## 3. Claude konfigurieren
+
+Füge `https://mcp.cafekong.de/api/mcp` als Remote-MCP-Server beziehungsweise benutzerdefinierte Integration hinzu. Claude entdeckt die OAuth-Konfiguration automatisch und öffnet den CafeKong-Login. Das gilt für OAuth-fähige Claude-Oberflächen; die genaue Bezeichnung des Menüpunkts hängt vom verwendeten Claude-Produkt ab.
+
+### Alternative für Claude Code: persönlicher Token
 
 Claude Code unterstützt den gleichen gehosteten Streamable-HTTP-Endpunkt und einen Bearer-Token im `Authorization`-Header.
 
@@ -91,7 +110,7 @@ Lege danach im gewünschten Projekt eine `.mcp.json` an oder ergänze sie:
   "mcpServers": {
     "cafekong": {
       "type": "http",
-      "url": "https://cafekong-mcp.vercel.app/api/mcp",
+      "url": "https://mcp.cafekong.de/api/mcp",
       "headers": {
         "Authorization": "Bearer ${CAFEKONG_BOT_TOKEN}"
       }
@@ -104,16 +123,12 @@ Die `${CAFEKONG_BOT_TOKEN}`-Referenz wird von Claude Code beim Laden aus der Umg
 
 ```bash
 claude mcp add --transport http cafekong \
-  https://cafekong-mcp.vercel.app/api/mcp \
+  https://mcp.cafekong.de/api/mcp \
   --scope user \
   --header "Authorization: Bearer ${CAFEKONG_BOT_TOKEN}"
 ```
 
 Prüfe die Verbindung mit `claude mcp list` oder innerhalb von Claude Code mit `/mcp`.
-
-### Claude.ai und Claude Desktop
-
-Der Remote-Endpunkt verwendet aktuell einen manuell konfigurierten Bearer-Token. Das funktioniert mit Claude Code, aber nicht direkt als URL-basierter Connector in Claude.ai oder Claude Desktop: Diese Oberflächen unterstützen Remote-Server ohne Authentifizierung oder mit OAuth. Dafür müsste CafeKong zusätzlich einen MCP-kompatiblen OAuth-Flow anbieten. Die lokale stdio-Variante in Claude Desktop bleibt davon unabhängig möglich.
 
 ## 4. Verbindung prüfen
 
@@ -181,11 +196,11 @@ Der Remote-MCP-Server validiert den Token bei jedem MCP-Request über CafeKong. 
 
 ### `401 Unauthorized`
 
-Der Token fehlt, ist ungültig, abgelaufen oder wurde widerrufen.
+Die OAuth-Anmeldung fehlt, ist abgelaufen oder wurde widerrufen. Bei der Token-Alternative kann auch der persönliche Token fehlen oder ungültig sein.
 
-1. Prüfe, ob `Authorization` beziehungsweise `bearer_token_env_var` konfiguriert ist.
-2. Erstelle bei Bedarf im CafeKong Profil einen neuen Token.
-3. Aktualisiere die Codex- oder Claude-Code-Konfiguration und starte den Client neu.
+1. Starte im Client die OAuth-Anmeldung erneut.
+2. Prüfe im CafeKong Profil unter „Verbundene AI-Clients“, ob die Verbindung aktiv ist.
+3. Bei der Token-Alternative prüfst du `Authorization` beziehungsweise `bearer_token_env_var`.
 
 ### `403 Forbidden`
 
@@ -193,7 +208,7 @@ Der Token ist gültig, darf die gewünschte Aktion aber nicht ausführen. Prüfe
 
 ### Tools erscheinen nicht
 
-1. Prüfe die URL exakt auf `https://cafekong-mcp.vercel.app/api/mcp`.
+1. Prüfe die URL exakt auf `https://mcp.cafekong.de/api/mcp`.
 2. Starte Codex oder Claude Code vollständig neu.
 3. Prüfe mit `codex mcp list` beziehungsweise `claude mcp list`, ob `cafekong` aktiviert ist.
 
