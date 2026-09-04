@@ -2,7 +2,7 @@
 
 Diese Anleitung ist für Spieler gedacht, die CafeKong per Bot oder Agent nutzen wollen.
 
-Der MCP-Server läuft lokal auf deinem Rechner. Er verbindet deinen MCP-Client mit der CafeKong Bot-API. Der Server enthält keine CafeKong-Datenbankzugänge und keine App-Secrets.
+Der MCP-Server kann lokal auf deinem Rechner oder remote auf Vercel laufen. Er verbindet deinen MCP-Client mit der CafeKong Bot-API. Der Server enthält keine CafeKong-Datenbankzugänge und keine App-Secrets.
 
 ## Überblick
 
@@ -12,6 +12,17 @@ Dein MCP-Client
   -> CafeKong Bot-API
   -> normale CafeKong Wettlogik
 ```
+
+Für die Remote-Variante:
+
+```text
+Dein MCP-Client
+  -> CafeKong MCP auf Vercel
+  -> CafeKong Bot-API
+  -> normale CafeKong Wettlogik
+```
+
+Der lokale stdio-Transport und der Remote-Transport können parallel genutzt werden. Die Vercel-Einrichtung steht in [vercel.md](./vercel.md).
 
 Alle Regeln bleiben bei CafeKong:
 

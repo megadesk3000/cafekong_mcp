@@ -1,8 +1,13 @@
 # CafeKong MCP Server
 
-Lokaler MCP-Adapter für CafeKong Bot-Tokens.
+Lokaler und remote hostbarer MCP-Adapter für CafeKong Bot-Tokens.
 
-Der Server enthält keine CafeKong-App-Logik und keinen Datenbankzugriff. Er spricht nur mit der offiziellen CafeKong Bot-API über `CAFEKONG_BASE_URL` und `CAFEKONG_BOT_TOKEN`.
+Der Server enthält keine CafeKong-App-Logik und keinen Datenbankzugriff. Er spricht nur mit der offiziellen CafeKong Bot-API.
+
+Zwei Transportarten werden unterstützt:
+
+- `stdio` für den weiterhin verfügbaren lokalen Betrieb
+- Streamable HTTP unter `/api/mcp` für Vercel und andere Remote-Deployments
 
 ## Schnellstart
 
@@ -18,7 +23,7 @@ Danach brauchst du:
 - deinen eigenen Bot-Token aus dem CafeKong Profil
 - eine Freischaltung in der gewünschten CafeKong Runde
 
-Die detaillierte Anleitung steht in [docs/setup.md](docs/setup.md).
+Die detaillierte lokale Anleitung steht in [docs/setup.md](docs/setup.md). Das Remote-Deployment ist in [docs/vercel.md](docs/vercel.md) beschrieben.
 
 ## Voraussetzungen
 
@@ -48,7 +53,17 @@ CAFEKONG_BOT_TOKEN=ckbot_... \
 npm start
 ```
 
-Der Server ist ein stdio-MCP-Server. Er wird normalerweise nicht direkt im Terminal bedient, sondern von einem MCP-Client gestartet.
+Dieser Start verwendet weiterhin den lokalen stdio-Transport. Der Prozess wird normalerweise vom MCP-Client gestartet.
+
+## HTTP-Entwicklung
+
+Der Remote-Endpunkt kann lokal separat gestartet werden:
+
+```bash
+CAFEKONG_BASE_URL=https://cafekong.example.com npm run dev:http
+```
+
+Der MCP-Endpunkt ist danach unter `http://localhost:3000/api/mcp` erreichbar. Der persönliche CafeKong Bot-Token wird bei HTTP nicht als Server-Environment-Variable gespeichert, sondern vom MCP-Client als Bearer-Token pro Request gesendet.
 
 ## Beispiel: MCP-Client-Konfiguration
 
@@ -106,6 +121,8 @@ Alternativ direkt mit Node:
 
 - Den Bot-Token nicht committen.
 - `.env` ist absichtlich ignoriert.
+- Bei einem Remote-Deployment keinen gemeinsamen `CAFEKONG_BOT_TOKEN` in Vercel hinterlegen.
+- Der Remote-Endpunkt validiert den eingehenden Bearer-Token über `/api/bot/me` und reicht ihn nur für Requests dieses Nutzers an die CafeKong Bot-API weiter.
 - Token können im CafeKong Profil widerrufen werden.
 - Runde und User müssen im CafeKong Rundenadmin explizit für MCP freigeschaltet sein.
 - Alle Wettregeln werden von der CafeKong API geprüft. Dieser MCP-Server setzt keine eigenen Regeln durch.
@@ -115,6 +132,8 @@ Alternativ direkt mit Node:
 ```bash
 npm run check
 ```
+
+Der Check prüft die JavaScript-Einstiegspunkte und erstellt einen produktionsnahen Next.js-Build inklusive `/api/mcp`.
 
 ## Fehlerbehebung
 

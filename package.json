@@ -1,6 +1,6 @@
 {
   "name": "@cafekong/mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "CafeKong MCP adapter for bot tokens.",
@@ -9,13 +9,20 @@
   },
   "scripts": {
     "start": "node src/server.mjs",
-    "check": "node --check src/server.mjs"
+    "dev:http": "next dev",
+    "build": "next build",
+    "test": "node --test",
+    "check": "node --check src/server.mjs && node --check src/register-tools.mjs && node --check app/api/mcp/route.js && node --test && next build"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.29.0",
-    "zod": "4.1.13"
+    "@modelcontextprotocol/server": "2.0.0",
+    "mcp-handler": "2.1.1",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.2.1"
   }
 }
