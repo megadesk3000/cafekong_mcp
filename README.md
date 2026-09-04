@@ -1,104 +1,47 @@
 # CafeKong MCP Server
 
-Lokaler und remote hostbarer MCP-Adapter für CafeKong Bot-Tokens.
+Remote- und lokal nutzbarer MCP-Adapter für CafeKong Bot-Tokens.
 
-Der Server enthält keine CafeKong-App-Logik und keinen Datenbankzugriff. Er spricht nur mit der offiziellen CafeKong Bot-API.
+## Empfohlener Standard
 
-Zwei Transportarten werden unterstützt:
+Der offizielle gehostete MCP-Endpunkt ist:
 
-- `stdio` für den weiterhin verfügbaren lokalen Betrieb
-- Streamable HTTP unter `/api/mcp` für Vercel und andere Remote-Deployments
-
-## Schnellstart
-
-```bash
-git clone https://github.com/<owner>/cafekong_mcp.git
-cd cafekong_mcp
-npm install
+```text
+https://cafekong-mcp.vercel.app/api/mcp
 ```
 
-Danach brauchst du:
+Für die normale Nutzung muss der Server nicht geklont, installiert oder lokal gestartet werden. Ein MCP-Client verbindet sich per Streamable HTTP mit diesem Endpunkt und sendet den persönlichen CafeKong Bot-Token als Bearer-Token.
 
-- die CafeKong URL, zum Beispiel `https://cafekong.example.com`
-- deinen eigenen Bot-Token aus dem CafeKong Profil
-- eine Freischaltung in der gewünschten CafeKong Runde
+Beispiel für Codex in `~/.codex/config.toml`:
 
-Die detaillierte lokale Anleitung steht in [docs/setup.md](docs/setup.md). Das Remote-Deployment ist in [docs/vercel.md](docs/vercel.md) beschrieben.
-
-## Voraussetzungen
-
-- Node.js 20 oder neuer
-- Ein CafeKong Account, der in mindestens einer Runde für MCP freigeschaltet ist
-- Ein Bot-Token aus dem CafeKong Profil
-
-## Installation
-
-```bash
-npm install
+```toml
+[mcp_servers.cafekong]
+url = "https://cafekong-mcp.vercel.app/api/mcp"
+bearer_token_env_var = "CAFEKONG_BOT_TOKEN"
+default_tools_approval_mode = "writes"
 ```
 
-## Lokaler Start
+Der gleiche Remote-Endpunkt funktioniert auch mit Claude Code. Beide Clients senden den persönlichen CafeKong Bot-Token als `Authorization: Bearer ...`-Header. Details und sichere Konfigurationsbeispiele stehen in [docs/setup.md](docs/setup.md).
 
-```bash
-CAFEKONG_BASE_URL=https://cafekong.example.com \
-CAFEKONG_BOT_TOKEN=ckbot_... \
-npm start
+Die vollständige Nutzeranleitung steht in [docs/setup.md](docs/setup.md).
+
+## Funktionsweise
+
+```text
+MCP-Client
+  -> https://cafekong-mcp.vercel.app/api/mcp
+  -> https://www.cafekong.de/api/bot/*
+  -> normale CafeKong Wettlogik
 ```
 
-Für lokale Entwicklung gegen CafeKong auf deinem Rechner:
+Der MCP-Server enthält keine CafeKong-App-Logik und keinen Datenbankzugriff. Runde, Nutzer, Token-Scopes, Wallet, Lock-Zeiten, Einsatzlimits, Coins und Wettregeln werden von der offiziellen CafeKong Bot-API geprüft.
 
-```bash
-CAFEKONG_BASE_URL=http://localhost:3000 \
-CAFEKONG_BOT_TOKEN=ckbot_... \
-npm start
-```
+## Unterstützte Transporte
 
-Dieser Start verwendet weiterhin den lokalen stdio-Transport. Der Prozess wird normalerweise vom MCP-Client gestartet.
+- Streamable HTTP über den gehosteten Standard-Endpunkt
+- `stdio` für lokale Entwicklung und eigene Installationen
 
-## HTTP-Entwicklung
-
-Der Remote-Endpunkt kann lokal separat gestartet werden:
-
-```bash
-CAFEKONG_BASE_URL=https://cafekong.example.com npm run dev:http
-```
-
-Der MCP-Endpunkt ist danach unter `http://localhost:3000/api/mcp` erreichbar. Der persönliche CafeKong Bot-Token wird bei HTTP nicht als Server-Environment-Variable gespeichert, sondern vom MCP-Client als Bearer-Token pro Request gesendet.
-
-## Beispiel: MCP-Client-Konfiguration
-
-```json
-{
-  "mcpServers": {
-    "cafekong": {
-      "command": "npm",
-      "args": ["start", "--silent"],
-      "cwd": "/Users/you/Develop/cafekong_mcp",
-      "env": {
-        "CAFEKONG_BASE_URL": "https://cafekong.example.com",
-        "CAFEKONG_BOT_TOKEN": "ckbot_..."
-      }
-    }
-  }
-}
-```
-
-Alternativ direkt mit Node:
-
-```json
-{
-  "mcpServers": {
-    "cafekong": {
-      "command": "node",
-      "args": ["/Users/you/Develop/cafekong_mcp/src/server.mjs"],
-      "env": {
-        "CAFEKONG_BASE_URL": "https://cafekong.example.com",
-        "CAFEKONG_BOT_TOKEN": "ckbot_..."
-      }
-    }
-  }
-}
-```
+Die lokale Variante bleibt vollständig erhalten, ist für normale Nutzer aber nicht mehr notwendig.
 
 ## Tools
 
@@ -117,15 +60,43 @@ Alternativ direkt mit Node:
 - `cafekong_place_bonus_wager`
 - `cafekong_cancel_bonus_wager`
 
+## Lokale Entwicklung
+
+Voraussetzung ist Node.js 20.9 oder neuer.
+
+```bash
+git clone https://github.com/megadesk3000/cafekong_mcp.git
+cd cafekong_mcp
+npm install
+```
+
+Lokalen stdio-Server starten:
+
+```bash
+CAFEKONG_BASE_URL=https://www.cafekong.de \
+CAFEKONG_BOT_TOKEN='ckbot_...' \
+npm start
+```
+
+HTTP-Transport lokal entwickeln:
+
+```bash
+CAFEKONG_BASE_URL=https://www.cafekong.de npm run dev:http
+```
+
+Der lokale HTTP-Endpunkt liegt danach unter `http://localhost:3000/api/mcp`.
+
+## Eigenes Vercel-Deployment
+
+Die Betreiberanleitung steht in [docs/vercel.md](docs/vercel.md). Für ein eigenes Deployment wird in Vercel nur `CAFEKONG_BASE_URL` gesetzt. Ein gemeinsamer `CAFEKONG_BOT_TOKEN` gehört nicht in die Vercel-Umgebung.
+
 ## Sicherheit
 
-- Den Bot-Token nicht committen.
-- `.env` ist absichtlich ignoriert.
-- Bei einem Remote-Deployment keinen gemeinsamen `CAFEKONG_BOT_TOKEN` in Vercel hinterlegen.
-- Der Remote-Endpunkt validiert den eingehenden Bearer-Token über `/api/bot/me` und reicht ihn nur für Requests dieses Nutzers an die CafeKong Bot-API weiter.
-- Token können im CafeKong Profil widerrufen werden.
-- Runde und User müssen im CafeKong Rundenadmin explizit für MCP freigeschaltet sein.
-- Alle Wettregeln werden von der CafeKong API geprüft. Dieser MCP-Server setzt keine eigenen Regeln durch.
+- Bot-Token niemals committen oder teilen.
+- Der gehostete Server speichert keinen gemeinsamen Nutzer-Token.
+- Der eingehende Bearer-Token wird über `/api/bot/me` validiert und nur für Requests dieses Nutzers weitergereicht.
+- Token können jederzeit im CafeKong Profil widerrufen werden.
+- Schreibende Tools sind als schreibend und destruktiv annotiert.
 
 ## Checks
 
@@ -133,8 +104,4 @@ Alternativ direkt mit Node:
 npm run check
 ```
 
-Der Check prüft die JavaScript-Einstiegspunkte und erstellt einen produktionsnahen Next.js-Build inklusive `/api/mcp`.
-
-## Fehlerbehebung
-
-Mehr Details zu `Missing CAFEKONG_BOT_TOKEN`, `401`, `403` und Client-Konfigurationen stehen in [docs/setup.md](docs/setup.md).
+Der Check führt Syntax- und Regressionstests aus und erstellt einen produktionsnahen Next.js-Build inklusive `/api/mcp`.

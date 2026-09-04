@@ -1,6 +1,12 @@
 # CafeKong MCP auf Vercel bereitstellen
 
-Der Remote-Server verwendet Streamable HTTP unter `/api/mcp`. Der lokale stdio-Server bleibt unabhängig davon verfügbar.
+Der öffentlich dokumentierte Standard-Endpunkt ist:
+
+```text
+https://cafekong-mcp.vercel.app/api/mcp
+```
+
+Er verwendet Streamable HTTP. Der lokale stdio-Server bleibt unabhängig davon als Entwicklungs- und Ausweichoption verfügbar.
 
 ## Architektur
 
@@ -32,14 +38,14 @@ Folgende Einstellungen verwenden:
 Als Environment Variable für Production und Preview setzen:
 
 ```text
-CAFEKONG_BASE_URL=https://cafekong.example.com
+CAFEKONG_BASE_URL=https://www.cafekong.de
 ```
 
 `CAFEKONG_BOT_TOKEN` nicht in Vercel hinterlegen. Ein gemeinsamer Token würde alle Nutzer unter derselben CafeKong-Identität ausführen.
 
 ## 3. Deployment prüfen
 
-Nach dem Deployment liegt der MCP-Endpunkt beispielsweise hier:
+Für das Standard-Deployment lautet der MCP-Endpunkt:
 
 ```text
 https://cafekong-mcp.vercel.app/api/mcp
@@ -55,7 +61,7 @@ npx @modelcontextprotocol/inspector@latest
 
 Im Inspector `Streamable HTTP` auswählen, die vollständige `/api/mcp`-URL eintragen und den persönlichen CafeKong Bot-Token als Bearer-Token verwenden.
 
-## 4. Codex mit dem Remote-Server verbinden
+## 4. Codex oder Claude Code mit dem Remote-Server verbinden
 
 Den persönlichen Token lokal in der Umgebung setzen:
 
@@ -74,14 +80,16 @@ default_tools_approval_mode = "writes"
 
 Codex anschliessend neu starten.
 
+Claude Code verwendet denselben Endpunkt und Bearer-Token. Die vollständige Konfiguration steht in [setup.md](setup.md). Für Claude.ai und Claude Desktop wäre zusätzlich OAuth nötig; der aktuelle manuelle Bearer-Token ist dort nicht direkt über die Connector-Oberfläche konfigurierbar.
+
 Dabei läuft kein lokaler MCP-Prozess. Nur der persönliche Token kommt weiterhin aus der lokalen Umgebung und wird über HTTPS an den Remote-Endpunkt gesendet.
 
 ## Lokale Variante weiterhin verwenden
 
-Der bisherige Start bleibt erhalten:
+Der lokale Start bleibt erhalten:
 
 ```bash
-CAFEKONG_BASE_URL=https://cafekong.example.com \
+CAFEKONG_BASE_URL=https://www.cafekong.de \
 CAFEKONG_BOT_TOKEN='ckbot_...' \
 npm start
 ```
@@ -90,6 +98,6 @@ Remote und lokal können als getrennte MCP-Einträge konfiguriert werden. Damit 
 
 ## Einschränkungen
 
-- Der Remote-Endpunkt unterstützt derzeit vorkonfigurierte Bearer-Tokens, aber keinen interaktiven OAuth-Login.
+- Der Remote-Endpunkt unterstützt derzeit vorkonfigurierte Bearer-Tokens für Codex und Claude Code, aber keinen interaktiven OAuth-Login für Claude.ai oder Claude Desktop.
 - Jeder MCP-Request validiert den Token gegen CafeKong. Diese Prüfung zählt als Bot-API-Read.
 - Die normalen CafeKong Scopes, Rundenfreigaben und Rate Limits bleiben unverändert aktiv.
