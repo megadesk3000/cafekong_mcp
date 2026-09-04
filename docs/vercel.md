@@ -79,17 +79,17 @@ Im Inspector `Streamable HTTP` auswählen und die vollständige `/api/mcp`-URL e
 
 ## 5. Codex oder Claude Code mit dem Remote-Server verbinden
 
-In `~/.codex/config.toml`:
+Nach dem Deployment die kanonische [Nutzeranleitung](setup.md) verwenden:
 
-```toml
-[mcp_servers.cafekong]
-url = "https://mcp.cafekong.de/api/mcp"
-default_tools_approval_mode = "writes"
-```
+- [Codex: CLI-Einrichtung, OAuth und Schreibfreigaben](setup.md#2-codex-konfigurieren)
+- [Claude Code: CLI-Einrichtung, Scopes und OAuth über `/mcp`](setup.md#3-claude-konfigurieren)
+- [Bestehende Token- oder lokale Einträge umstellen](setup.md#9-von-lokal-oder-persönlichem-token-auf-oauth-wechseln)
+- [Mit Lese-Tools die Verbindung prüfen](setup.md#4-verbindung-prüfen)
 
-Danach `codex mcp login cafekong` ausführen. Claude verwendet dieselbe URL und startet seinen OAuth-Flow über die Oberfläche.
-
-Dabei läuft kein lokaler MCP-Prozess und es muss kein CafeKong-Token von Hand gespeichert werden. Die vollständige Konfiguration und die persönliche Token-Alternative stehen in [setup.md](setup.md).
+Dabei läuft kein lokaler MCP-Prozess und es muss kein CafeKong-Token von Hand
+gespeichert werden. Die Secrets dieses Betreiber-Runbooks gehören niemals in
+die Konfiguration eines Spielers. Ein erfolgreicher Build oder ein `200` der
+Metadatenroute ersetzt keinen vollständigen OAuth- und Tool-Aufruf-Test.
 
 ## Lokale Variante weiterhin verwenden
 

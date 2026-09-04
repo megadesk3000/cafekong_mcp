@@ -12,17 +12,38 @@ https://mcp.cafekong.de/api/mcp
 
 Für die normale Nutzung muss der Server nicht geklont, installiert oder lokal gestartet werden. Ein MCP-Client verbindet sich per Streamable HTTP und meldet den Nutzer über CafeKong OAuth an. Persönliche Bot-Tokens bleiben als kompatible Alternative erhalten.
 
-Beispiel für Codex in `~/.codex/config.toml`:
+### Schnellstart: Codex
 
-```toml
-[mcp_servers.cafekong]
-url = "https://mcp.cafekong.de/api/mcp"
-default_tools_approval_mode = "writes"
+```bash
+codex mcp add cafekong --url https://mcp.cafekong.de/api/mcp
+codex mcp login cafekong
 ```
 
-Danach startet `codex mcp login cafekong` den Browser-Login. Der gleiche Remote-Endpunkt funktioniert mit Claude. Details und die manuelle Token-Alternative stehen in [docs/setup.md](docs/setup.md).
+Im Browser bei CafeKong anmelden und die angefragten Rechte prüfen. Im
+Serverblock der persönlichen `~/.codex/config.toml` zusätzlich
+`default_tools_approval_mode = "writes"` setzen, wenn schreibende Tools eine
+Bestätigung benötigen sollen. Der Add-Befehl setzt diese Option nicht selbst.
 
-Die vollständige Nutzeranleitung steht in [docs/setup.md](docs/setup.md).
+### Schnellstart: Claude Code
+
+```bash
+claude mcp add --transport http --scope user cafekong https://mcp.cafekong.de/api/mcp
+claude
+```
+
+In der gestarteten Claude-Code-Sitzung `/mcp` eingeben, `cafekong` auswählen
+und die OAuth-Anmeldung starten. Keinen Token-Header für diesen Weg ergänzen.
+
+Voraussetzung für beide Clients ist ein CafeKong-Account mit MCP-Freischaltung
+für die gewünschte Runde. Die CLI muss bereits installiert sein; das
+MCP-Repository selbst wird für diesen Schnellstart nicht benötigt.
+
+Die ausführliche [Nutzeranleitung](docs/setup.md) beschreibt Einrichtung,
+Client-Scopes, Schreibfreigaben, Verbindungsprüfung, versionsabhängige
+OAuth-Optionen, Token-Alternativen und Fehlerbehebung. Existiert bereits ein
+CafeKong-Eintrag, zuerst den
+[Umstellungsabschnitt](docs/setup.md#9-von-lokal-oder-persönlichem-token-auf-oauth-wechseln)
+lesen. Claude Web/Desktop und Claude Code sind dort getrennt beschrieben.
 
 ## Funktionsweise
 
