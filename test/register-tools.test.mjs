@@ -48,7 +48,7 @@ test('parameterless tools forward the request-scoped bearer token', async (conte
   assert.equal(observedRequest.url, 'https://cafekong.example.com/api/bot/me')
   assert.equal(observedRequest.options.headers.authorization, 'Bearer ckbot_request_scoped')
   assert.equal(result.isError, undefined)
-  assert.equal(result.structuredContent.bot.user_id, 'user-1')
+  assert.equal(JSON.parse(result.content[0].text).bot.user_id, 'user-1')
 })
 
 test('write tools forward method, path and body', async (context) => {
@@ -82,5 +82,57 @@ test('write tools forward method, path and body', async (context) => {
   )
   assert.equal(observedRequest.options.method, 'POST')
   assert.deepEqual(JSON.parse(observedRequest.options.body), input)
-  assert.equal(result.structuredContent.wager.id, 'wager-1')
+  assert.equal(JSON.parse(result.content[0].text).wager.id, 'wager-1')
+})
+
+test('read tools expose and forward compact filters', async (context) => {
+  const tools = registeredTools()
+  const originalFetch = globalThis.fetch
+  const observedUrls = []
+
+  context.after(() => {
+    globalThis.fetch = originalFetch
+  })
+
+  globalThis.fetch = async (url) => {
+    observedUrls.push(url)
+    return Response.json({ ok: true })
+  }
+
+  const roundId = '00000000-0000-4000-8000-000000000001'
+  const matchId = '00000000-0000-4000-8000-000000000002'
+  const stageId = '00000000-0000-4000-8000-000000000003'
+  const participantId = '00000000-0000-4000-8000-000000000004'
+
+  await tools.get('cafekong_get_round_state').handler({
+    roundId,
+    matchState: 'upcoming',
+    matchIds: [matchId],
+    matchday: 5,
+    stageId,
+    participantId,
+    kickoffFrom: '2026-10-22T00:00:00.000Z',
+    kickoffTo: '2026-10-23T00:00:00.000Z',
+    bettingState: 'open',
+    includeOdds: false,
+    limit: 10,
+    offset: 20,
+  }, { http: { authInfo: { token: 'ckbot_request_scoped' } } })
+  await tools.get('cafekong_list_wagers').handler({
+    roundId,
+    status: 'settled',
+    pricingStatus: 'priced',
+    matchId,
+    limit: 25,
+    offset: 50,
+  }, { http: { authInfo: { token: 'ckbot_request_scoped' } } })
+
+  assert.equal(
+    observedUrls[0],
+    `https://cafekong.example.com/api/bot/rounds/${roundId}/state?matchState=upcoming&matchIds=${matchId}&matchday=5&stageId=${stageId}&participantId=${participantId}&kickoffFrom=2026-10-22T00%3A00%3A00.000Z&kickoffTo=2026-10-23T00%3A00%3A00.000Z&bettingState=open&includeOdds=false&limit=10&offset=20`,
+  )
+  assert.equal(
+    observedUrls[1],
+    `https://cafekong.example.com/api/bot/rounds/${roundId}/wagers?status=settled&pricingStatus=priced&matchId=${matchId}&limit=25&offset=50`,
+  )
 })

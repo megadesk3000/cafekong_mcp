@@ -80,6 +80,17 @@ Die lokale Variante mit `CAFEKONG_BOT_TOKEN` bleibt vollständig erhalten, ist f
 - `cafekong_place_bonus_wager`
 - `cafekong_cancel_bonus_wager`
 
+Read-Tools sind standardmässig kompakt:
+
+- `cafekong_get_round_state` liefert nur aktuell relevante Matches und kann
+  nach Match-Zustand, IDs, Spieltag, Stage, Teilnehmer, Anstossfenster oder
+  Wettverfügbarkeit gefiltert und paginiert werden. Die sehr grosse
+  Vollansicht ist nur explizit mit `view=full` erreichbar.
+- `cafekong_list_wagers` liefert standardmässig nur aktive Wetten und kann
+  nach Status, Pricing-Status und Match gefiltert und paginiert werden.
+- API-JSON wird pro Tool-Aufruf nur einmal als Textinhalt übertragen, nicht
+  zusätzlich als identische `structuredContent`-Kopie.
+
 ## Lokale Entwicklung
 
 Voraussetzung ist Node.js 20.9 oder neuer.

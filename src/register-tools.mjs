@@ -15,7 +15,6 @@ const WRITES_DATA = {
 function jsonResponse(data) {
   return {
     content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-    structuredContent: data,
   }
 }
 
@@ -23,12 +22,23 @@ function jsonError(error) {
   return {
     isError: true,
     content: [{ type: 'text', text: JSON.stringify(error, null, 2) }],
-    structuredContent: error,
   }
 }
 
 function encodePath(value) {
   return encodeURIComponent(value)
+}
+
+function withQuery(path, values) {
+  const query = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined || value === null || value === '') continue
+    query.set(key, Array.isArray(value) ? value.join(',') : String(value))
+  }
+
+  const search = query.toString()
+  return search ? `${path}?${search}` : path
 }
 
 const roundInput = z.object({
@@ -103,10 +113,27 @@ export function registerCafeKongTools(server, { baseUrl, getBotToken }) {
 
   server.registerTool('cafekong_get_round_state', {
     title: 'CafeKong Round State',
-    description: 'Load round, matches, odds context, and current user round state.',
-    inputSchema: roundInput,
+    description: 'Load a compact, paginated round state. Filter by matchday, stage, participant, kickoff window, lifecycle, or betting availability. Request view=full only for exceptional diagnostics because it is very large.',
+    inputSchema: z.object({
+      roundId: z.string().uuid().describe('CafeKong round id'),
+      view: z.enum(['compact', 'full']).optional(),
+      matchState: z.enum(['actionable', 'upcoming', 'live', 'completed', 'all']).optional(),
+      matchIds: z.array(z.string().uuid()).max(50).optional(),
+      matchday: z.number().int().min(1).max(128).optional().describe('League/group matchday number'),
+      stageId: z.string().uuid().optional(),
+      participantId: z.string().uuid().optional().describe('Matches involving this competition participant'),
+      kickoffFrom: z.string().datetime({ offset: true }).optional(),
+      kickoffTo: z.string().datetime({ offset: true }).optional(),
+      bettingState: z.enum(['open', 'locked', 'all']).optional(),
+      includeOdds: z.boolean().optional(),
+      limit: z.number().int().min(1).max(100).optional(),
+      offset: z.number().int().min(0).max(10_000).optional(),
+    }),
     annotations: READ_ONLY,
-  }, async ({ roundId }, context) => callCafeKong(`/api/bot/rounds/${encodePath(roundId)}/state`, context))
+  }, async ({ roundId, ...filters }, context) => callCafeKong(withQuery(
+    `/api/bot/rounds/${encodePath(roundId)}/state`,
+    filters,
+  ), context))
 
   server.registerTool('cafekong_get_wallet', {
     title: 'CafeKong Wallet',
@@ -124,10 +151,20 @@ export function registerCafeKongTools(server, { baseUrl, getBotToken }) {
 
   server.registerTool('cafekong_list_wagers', {
     title: 'CafeKong Match Wagers',
-    description: 'List the bot user match wagers for a round.',
-    inputSchema: roundInput,
+    description: 'List a filtered, paginated set of the bot user match wagers. Defaults to active wagers.',
+    inputSchema: z.object({
+      roundId: z.string().uuid().describe('CafeKong round id'),
+      status: z.enum(['active', 'settled', 'cancelled', 'replaced', 'all']).optional(),
+      pricingStatus: z.enum(['pending', 'priced', 'unavailable']).optional(),
+      matchId: z.string().uuid().optional(),
+      limit: z.number().int().min(1).max(100).optional(),
+      offset: z.number().int().min(0).max(10_000).optional(),
+    }),
     annotations: READ_ONLY,
-  }, async ({ roundId }, context) => callCafeKong(`/api/bot/rounds/${encodePath(roundId)}/wagers`, context))
+  }, async ({ roundId, status, pricingStatus, matchId, limit, offset }, context) => callCafeKong(withQuery(
+    `/api/bot/rounds/${encodePath(roundId)}/wagers`,
+    { status, pricingStatus, matchId, limit, offset },
+  ), context))
 
   server.registerTool('cafekong_get_match_wager_constraints', {
     title: 'CafeKong Match Wager Constraints',
