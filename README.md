@@ -91,6 +91,10 @@ Read-Tools sind standardmässig kompakt:
 - `cafekong_get_coins` liefert den aktuellen Coin-Stand und ein kompaktes,
   mit `limit` und `offset` paginiertes Coin-Ledger. Umfangreiche Admin- und
   Stage-Prognosen werden nicht in den MCP-Kontext kopiert.
+- `cafekong_list_bonus_markets` liefert kompakte, filter- und paginierbare
+  Markt-Zusammenfassungen ohne Optionslisten oder Provider-Rohdaten. Optionen
+  und aktuelle Quoten werden erst gezielt mit
+  `cafekong_get_bonus_wager_constraints` fuer einen Markt geladen.
 - API-JSON wird pro Tool-Aufruf nur einmal als Textinhalt übertragen, nicht
   zusätzlich als identische `structuredContent`-Kopie.
 

@@ -364,6 +364,12 @@ eine kompakte Ledger-Seite. Mit `limit` (maximal 100) und `offset` koennen
 weitere Eintraege gezielt nachgeladen werden; umfangreiche Stage- und
 Admin-Prognosen werden nicht in den MCP-Kontext kopiert.
 
+`cafekong_list_bonus_markets` liefert standardmaessig alle kompakten
+Markt-Zusammenfassungen. `marketState`, `marketId`, `limit` und `offset`
+begrenzen die Liste bei Bedarf. Die Optionen und aktuellen Quoten eines
+ausgewaehlten Markts liefert anschliessend gezielt
+`cafekong_get_bonus_wager_constraints`.
+
 Wenn ein Scope fehlt, antwortet CafeKong mit `403`.
 
 ## 7. Rate Limits

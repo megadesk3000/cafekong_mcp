@@ -131,6 +131,13 @@ test('read tools expose and forward compact filters', async (context) => {
     limit: 20,
     offset: 40,
   }, { http: { authInfo: { token: 'ckbot_request_scoped' } } })
+  await tools.get('cafekong_list_bonus_markets').handler({
+    roundId,
+    marketState: 'settled',
+    marketId: matchId,
+    limit: 10,
+    offset: 20,
+  }, { http: { authInfo: { token: 'ckbot_request_scoped' } } })
 
   assert.equal(
     observedUrls[0],
@@ -143,5 +150,9 @@ test('read tools expose and forward compact filters', async (context) => {
   assert.equal(
     observedUrls[2],
     `https://cafekong.example.com/api/bot/rounds/${roundId}/coins?view=compact&limit=20&offset=40`,
+  )
+  assert.equal(
+    observedUrls[3],
+    `https://cafekong.example.com/api/bot/rounds/${roundId}/bonus-markets?view=compact&marketState=settled&marketId=${matchId}&limit=10&offset=20`,
   )
 })

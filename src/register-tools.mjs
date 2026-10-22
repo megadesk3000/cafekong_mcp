@@ -204,10 +204,19 @@ export function registerCafeKongTools(server, { baseUrl, getBotToken }) {
 
   server.registerTool('cafekong_list_bonus_markets', {
     title: 'CafeKong Bonus Markets',
-    description: 'List available bonus markets for a round.',
-    inputSchema: roundInput,
+    description: 'List compact bonus-market summaries. Use the constraints tool with a market id to load its available options and current odds.',
+    inputSchema: z.object({
+      roundId: z.string().uuid().describe('CafeKong round id'),
+      marketState: z.enum(['actionable', 'settled', 'all']).optional(),
+      marketId: z.string().uuid().optional(),
+      limit: z.number().int().min(1).max(100).optional(),
+      offset: z.number().int().min(0).max(10_000).optional(),
+    }),
     annotations: READ_ONLY,
-  }, async ({ roundId }, context) => callCafeKong(`/api/bot/rounds/${encodePath(roundId)}/bonus-markets`, context))
+  }, async ({ roundId, marketState, marketId, limit, offset }, context) => callCafeKong(withQuery(
+    `/api/bot/rounds/${encodePath(roundId)}/bonus-markets`,
+    { view: 'compact', marketState, marketId, limit, offset },
+  ), context))
 
   server.registerTool('cafekong_list_bonus_wagers', {
     title: 'CafeKong Bonus Wagers',
