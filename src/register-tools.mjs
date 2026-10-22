@@ -144,10 +144,17 @@ export function registerCafeKongTools(server, { baseUrl, getBotToken }) {
 
   server.registerTool('cafekong_get_coins', {
     title: 'CafeKong Coins',
-    description: 'Load double-quote coin balance and recent coin activity for a round.',
-    inputSchema: roundInput,
+    description: 'Load the double-quote coin balance and a compact, paginated coin ledger for a round.',
+    inputSchema: z.object({
+      roundId: z.string().uuid().describe('CafeKong round id'),
+      limit: z.number().int().min(1).max(100).optional(),
+      offset: z.number().int().min(0).max(10_000).optional(),
+    }),
     annotations: READ_ONLY,
-  }, async ({ roundId }, context) => callCafeKong(`/api/bot/rounds/${encodePath(roundId)}/coins`, context))
+  }, async ({ roundId, limit, offset }, context) => callCafeKong(withQuery(
+    `/api/bot/rounds/${encodePath(roundId)}/coins`,
+    { view: 'compact', limit, offset },
+  ), context))
 
   server.registerTool('cafekong_list_wagers', {
     title: 'CafeKong Match Wagers',

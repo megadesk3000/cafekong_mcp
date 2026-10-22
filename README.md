@@ -88,6 +88,9 @@ Read-Tools sind standardmässig kompakt:
   Vollansicht ist nur explizit mit `view=full` erreichbar.
 - `cafekong_list_wagers` liefert standardmässig nur aktive Wetten und kann
   nach Status, Pricing-Status und Match gefiltert und paginiert werden.
+- `cafekong_get_coins` liefert den aktuellen Coin-Stand und ein kompaktes,
+  mit `limit` und `offset` paginiertes Coin-Ledger. Umfangreiche Admin- und
+  Stage-Prognosen werden nicht in den MCP-Kontext kopiert.
 - API-JSON wird pro Tool-Aufruf nur einmal als Textinhalt übertragen, nicht
   zusätzlich als identische `structuredContent`-Kopie.
 

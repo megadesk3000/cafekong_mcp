@@ -126,6 +126,11 @@ test('read tools expose and forward compact filters', async (context) => {
     limit: 25,
     offset: 50,
   }, { http: { authInfo: { token: 'ckbot_request_scoped' } } })
+  await tools.get('cafekong_get_coins').handler({
+    roundId,
+    limit: 20,
+    offset: 40,
+  }, { http: { authInfo: { token: 'ckbot_request_scoped' } } })
 
   assert.equal(
     observedUrls[0],
@@ -134,5 +139,9 @@ test('read tools expose and forward compact filters', async (context) => {
   assert.equal(
     observedUrls[1],
     `https://cafekong.example.com/api/bot/rounds/${roundId}/wagers?status=settled&pricingStatus=priced&matchId=${matchId}&limit=25&offset=50`,
+  )
+  assert.equal(
+    observedUrls[2],
+    `https://cafekong.example.com/api/bot/rounds/${roundId}/coins?view=compact&limit=20&offset=40`,
   )
 })

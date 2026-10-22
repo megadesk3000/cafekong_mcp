@@ -359,6 +359,11 @@ Für Wallet und Coins:
 - `bot:wallet:read`
 - `bot:coins:read`
 
+`cafekong_get_coins` liefert standardmaessig nur den aktuellen Coin-Stand und
+eine kompakte Ledger-Seite. Mit `limit` (maximal 100) und `offset` koennen
+weitere Eintraege gezielt nachgeladen werden; umfangreiche Stage- und
+Admin-Prognosen werden nicht in den MCP-Kontext kopiert.
+
 Wenn ein Scope fehlt, antwortet CafeKong mit `403`.
 
 ## 7. Rate Limits
