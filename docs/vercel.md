@@ -34,7 +34,7 @@ Folgende Einstellungen verwenden:
 - Root Directory: `./`
 - Build Command: Vercel-Standard
 - Install Command: Vercel-Standard
-- Node.js: 20 oder neuer
+- Node.js: 24 LTS (aktueller Patchstand)
 
 Als Environment Variable für Production und Preview setzen:
 
@@ -76,6 +76,13 @@ npx @modelcontextprotocol/inspector@latest
 ```
 
 Im Inspector `Streamable HTTP` auswählen und die vollständige `/api/mcp`-URL eintragen. Für den OAuth-Test die angebotene Anmeldung verwenden; alternativ kann weiterhin ein persönlicher CafeKong Bot-Token als Bearer-Token gesetzt werden.
+
+## HTTP-Sicherheitsgrenzen
+
+Authentifizierung erfolgt vor der MCP-Verarbeitung. POST-Bodies sind vor dem
+JSON-Parsing auf 1 MiB begrenzt, auch ohne verlässlichen Content-Length-Header.
+Das aktualisierte SDK begrenzt zusätzlich JSON-RPC-Batches. Für jede Anfrage
+erzeugt die bestehende Handler-Factory eine eigene Serverinstanz.
 
 ## 5. Codex oder Claude Code mit dem Remote-Server verbinden
 

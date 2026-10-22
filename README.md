@@ -93,7 +93,7 @@ Read-Tools sind standardmässig kompakt:
 
 ## Lokale Entwicklung
 
-Voraussetzung ist Node.js 20.9 oder neuer.
+Voraussetzung ist einer aktuellen Node.js-Version aus der LTS-Linie 22 oder 24.
 
 ```bash
 git clone https://github.com/megadesk3000/cafekong_mcp.git
@@ -135,4 +135,4 @@ Die Betreiberanleitung steht in [docs/vercel.md](docs/vercel.md). Ein gemeinsame
 npm run check
 ```
 
-Der Check führt Syntax- und Regressionstests aus und erstellt einen produktionsnahen Next.js-Build inklusive `/api/mcp`.
+Der Check führt Syntax- und Regressionstests aus, erstellt einen produktionsnahen Next.js-Build inklusive `/api/mcp` und prüft diesen über echte lokale HTTP-Anfragen. Der lokale API-Mock testet Token-Ablehnung, OAuth-Delegation, Client-Isolation und Request-Limits ohne Produktionszugriff. Nach einem bestehenden Build kann `npm run test:http` separat ausgeführt werden.
